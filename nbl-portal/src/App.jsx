@@ -6,6 +6,7 @@ const NBLPartyPortal = () => {
   const [eventDate, setEventDate] = useState('');
   const [eventDuration, setEventDuration] = useState(4);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedBrandCounts, setSelectedBrandCounts] = useState({});
   const [deliveryLocation, setDeliveryLocation] = useState('');
   const [showMap, setShowMap] = useState(false);
   const [deliveryCoords, setDeliveryCoords] = useState(null);
@@ -21,7 +22,7 @@ const NBLPartyPortal = () => {
 
   const CRATE_CAPACITY = 25;
   const AVG_CRATE_PRICE = 75000;
-  const BRANDS = ['Nile Special', 'Club', 'Castle Lite', 'Eagle'];
+  const BRANDS = ['Nile Special', 'Club', 'Castle Lite', 'Eagle Lager', 'Extra Lager', 'Redd’s', 'Happos', 'Nile Gold'];
 
   useEffect(() => {
     if (!useCustom) {
@@ -33,9 +34,98 @@ const NBLPartyPortal = () => {
 
   const toggleBrand = (brand) => {
     setSelectedBrands((prev) => {
-      if (prev.includes(brand)) return prev.filter((b) => b !== brand);
+      if (prev.includes(brand)) {
+        // removing brand -> remove its count
+        setSelectedBrandCounts((counts) => {
+          const next = { ...counts };
+          delete next[brand];
+          const total = sumBrandCounts(next);
+          setCustomCrates(total || null);
+          setCrates(total || 0);
+          return next;
+        });
+        return prev.filter((b) => b !== brand);
+      }
+      // add brand with existing allocation or zero
+      setSelectedBrandCounts((counts) => ({ ...counts, [brand]: counts[brand] || 0 }));
       return [...prev, brand];
     });
+  };
+
+  // Compute allocation of custom crates across selected brands
+  const getBrandAllocation = () => {
+    const total = customCrates || 0;
+    const brands = selectedBrands && selectedBrands.length > 0 ? selectedBrands : [];
+    if (total <= 0 || brands.length === 0) return {};
+    const base = Math.floor(total / brands.length);
+    let remainder = total - base * brands.length;
+    const alloc = {};
+    for (let i = 0; i < brands.length; i++) {
+      alloc[brands[i]] = base + (remainder > 0 ? 1 : 0);
+      remainder -= 1;
+    }
+    return alloc;
+  };
+
+  // compute allocation for an explicit total (used when user sets total)
+  const computeAllocationFor = (total) => {
+    const brands = selectedBrands && selectedBrands.length > 0 ? selectedBrands : [];
+    if (total <= 0 || brands.length === 0) return {};
+    const base = Math.floor(total / brands.length);
+    let remainder = total - base * brands.length;
+    const alloc = {};
+    for (let i = 0; i < brands.length; i++) {
+      alloc[brands[i]] = base + (remainder > 0 ? 1 : 0);
+      remainder -= 1;
+    }
+    return alloc;
+  };
+
+  const sumBrandCounts = (counts) => {
+    return Object.values(counts || {}).reduce((s, v) => s + (Number(v) || 0), 0);
+  };
+
+  const [orderError, setOrderError] = useState('');
+  const [orderSuccess, setOrderSuccess] = useState('');
+
+  const placeOrder = () => {
+    setOrderError('');
+    setOrderSuccess('');
+    // validations
+    if (useCustom) {
+      if (!customCrates || customCrates <= 0) {
+        setOrderError('Please enter a valid number of crates when customizing.');
+        return;
+      }
+      if (!selectedBrands || selectedBrands.length === 0) {
+        setOrderError('Please select at least one brand when customizing crates.');
+        return;
+      }
+    }
+    if (!deliveryLocation && !deliveryInput) {
+      setOrderError('Please select or enter a delivery location.');
+      return;
+    }
+
+    // Build order payload
+    const payload = {
+      guests: Number(guests),
+      eventDate: eventDate || null,
+      eventDuration: Number(eventDuration),
+      crates: crates,
+      customCrates: customCrates || null,
+      brands: useCustom ? selectedBrands : ['All Brands'],
+      brandCounts: useCustom ? selectedBrandCounts : null,
+      delivery: {
+        address: deliveryLocation || deliveryInput,
+        coords: deliveryCoords || null,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    // For now we'll console.log and show a success message (you can POST this payload to your API)
+    console.log('Order payload:', payload);
+    setOrderSuccess('Order prepared — check console for payload (or implement API POST).');
   };
 
   // helper to select a search result (from Nominatim)
@@ -335,6 +425,25 @@ const NBLPartyPortal = () => {
                             className="w-4 h-4 accent-[#921A28]"
                           />
                           <span className="text-sm font-bold">{b}</span>
+                          {selectedBrands.includes(b) && (
+                            <input
+                              type="number"
+                              min="0"
+                              value={selectedBrandCounts[b] ?? ''}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                setSelectedBrandCounts((prev) => {
+                                  const next = { ...prev, [b]: val };
+                                  const total = sumBrandCounts(next);
+                                  setCustomCrates(total || null);
+                                  setCrates(total || 0);
+                                  return next;
+                                });
+                              }}
+                              placeholder={getBrandAllocation()[b] || 0}
+                              className="w-20 ml-2 px-2 py-1 border border-gray-200 rounded text-sm"
+                            />
+                          )}
                         </label>
                       ))}
                     </div>
@@ -347,6 +456,14 @@ const NBLPartyPortal = () => {
                       const val = parseInt(e.target.value) || null;
                       setCustomCrates(val);
                       if (val) setCrates(val);
+                      // if brands selected and no per-brand counts set, populate allocation
+                      if (val && selectedBrands.length > 0) {
+                        const noneSet = selectedBrands.every((b) => !selectedBrandCounts[b]);
+                        if (noneSet) {
+                          const alloc = computeAllocationFor(val);
+                          setSelectedBrandCounts((prev) => ({ ...prev, ...alloc }));
+                        }
+                      }
                     }}
                     placeholder="Enter number of crates"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-bold focus:outline-none focus:border-[#921A28]"
