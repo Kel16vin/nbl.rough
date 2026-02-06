@@ -232,7 +232,7 @@ const NBLPartyPortal = () => {
     <div className="min-h-screen bg-[#FDF8E4] font-sans text-[#333]">
       {/* Top Bar - Brand Red */}
       <div className="bg-white py-4 px-8 flex justify-between items-center border-b border-gray-200">
-        <img src="https://www.nilebreweries.com/wp-content/uploads/2023/10/nbl-logo.png" alt="NBL Logo" className="h-12" />
+        <img src="/src/assets/WhatsApp Image 2026-02-06 at 15.44.26.jpeg" alt="NBL Logo" className="h-24" />
         <div className="hidden md:flex gap-6 text-sm font-bold uppercase text-gray-600">
           <span>Home</span> <span>About Us</span> <span>Our Brands</span> <span>Sustainability</span>
         </div>
