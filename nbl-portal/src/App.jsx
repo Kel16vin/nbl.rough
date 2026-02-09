@@ -242,15 +242,15 @@ const NBLPartyPortal = () => {
   return (
     <div className="min-h-screen bg-[#FDF8E4] font-sans text-[#333]">
       {/* Top Bar - Brand Red */}
-      <div className="bg-white py-4 px-8 flex justify-between items-center border-b border-gray-200">
-        <img src="/src/assets/WhatsApp Image 2026-02-06 at 15.44.26.jpeg" alt="NBL Logo" className="h-24" />
+      <div className="bg-white py-2 px-6 flex justify-between items-center border-b border-gray-200">
+        <img src="/src/assets/WhatsApp Image 2026-02-06 at 15.44.26.jpeg" alt="NBL Logo" className="h-16" />
         <div className="hidden md:flex gap-6 text-sm font-bold uppercase text-gray-600">
           <span>Home</span> <span>About Us</span> <span>Our Brands</span> <span>Sustainability</span>
         </div>
       </div>
 
       {/* Secondary Nav - Deep Malt Brown */}
-      <div className="bg-[#4B2315] text-white py-3 px-8 flex justify-between items-center shadow-md">
+      <div className="bg-[#4B2315] text-white py-2 px-6 flex justify-between items-center shadow-md">
         <div className="flex gap-6 text-xs font-bold uppercase">
           <span>News & Media</span> <span>Events</span> <span>Careers</span> <span>Contact Us</span>
         </div>
@@ -260,19 +260,19 @@ const NBLPartyPortal = () => {
       </div>
 
       {/* Hero Section */}
-      <div className="py-12 px-6 text-center">
-        <h2 className="text-4xl font-black uppercase tracking-tight mb-2 italic">PARTY STARTER</h2>
+      <div className="py-6 px-6 text-center">
+        <h2 className="text-3xl font-black uppercase tracking-tight mb-2 italic">PARTY STARTER</h2>
         <p className="text-gray-600 max-w-xl mx-auto border-b-2 border-[#921A28] pb-4">
           With our iconic brands, we have you covered for your event.
         </p>
       </div>
 
       {/* Calculator Card with Smart Mix */}
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="grid lg:grid-cols-3 gap-4">
           {/* Inputs (Left) */}
-          <div className="lg:col-span-1 bg-white rounded-lg shadow-xl p-8 border border-gray-200">
-            <div className="space-y-8">
+          <div className="lg:col-span-1 bg-white rounded-lg shadow-xl p-6 border border-gray-200">
+            <div className="space-y-6">
             <div>
               <label className="block text-xs font-black uppercase text-gray-500 mb-4 tracking-widest">Expected Guests</label>
               <div className="flex gap-3">
@@ -486,45 +486,45 @@ const NBLPartyPortal = () => {
           </div>
 
           {/* Center/Right: Smart Mix Results */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-[#921A28] text-white p-8 rounded-xl shadow-xl relative overflow-hidden">
-               <Beer className="absolute -right-4 -bottom-4 w-40 h-40 opacity-10 rotate-12" />
+          <div className="lg:col-span-2 space-y-4">
+            <div className="bg-[#921A28] text-white p-6 rounded-xl shadow-xl relative overflow-hidden">
+               <Beer className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 rotate-12" />
                <p className="text-xs font-bold uppercase tracking-[0.3em] opacity-80 mb-2">Total Suggested Order</p>
-               <h2 className="text-7xl font-black">{breakdown.total} <span className="text-2xl uppercase opacity-60">Crates</span></h2>
+               <h2 className="text-6xl font-black">{breakdown.total} <span className="text-xl uppercase opacity-60">Crates</span></h2>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-3">
               {/* Nile Special Card */}
-              <div className="bg-white p-6 rounded-xl border-b-4 border-[#D1A33C] shadow-sm">
-                <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Flagship</div>
-                <div className="text-2xl font-black text-[#4B2315]">{breakdown.nile} Crates</div>
+              <div className="bg-white p-4 rounded-xl border-b-4 border-[#D1A33C] shadow-sm">
+                <div className="text-[8px] font-black text-gray-400 uppercase mb-1">Flagship</div>
+                <div className="text-xl font-black text-[#4B2315]">{breakdown.nile} Crates</div>
                 <div className="text-xs font-bold text-[#D1A33C] uppercase mt-2 italic">Nile Special</div>
               </div>
 
               {/* Club Card */}
-              <div className="bg-white p-6 rounded-xl border-b-4 border-blue-400 shadow-sm">
-                <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Refreshing</div>
-                <div className="text-2xl font-black text-[#4B2315]">{breakdown.club} Crates</div>
+              <div className="bg-white p-4 rounded-xl border-b-4 border-blue-400 shadow-sm">
+                <div className="text-[8px] font-black text-gray-400 uppercase mb-1">Refreshing</div>
+                <div className="text-xl font-black text-[#4B2315]">{breakdown.club} Crates</div>
                 <div className="text-xs font-bold text-blue-500 uppercase mt-2 italic">Club Pilsener</div>
               </div>
 
               {/* Castle Lite Card */}
-              <div className="bg-white p-6 rounded-xl border-b-4 border-gray-300 shadow-sm">
-                <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Premium</div>
-                <div className="text-2xl font-black text-[#4B2315]">{breakdown.castle} Crates</div>
+              <div className="bg-white p-4 rounded-xl border-b-4 border-gray-300 shadow-sm">
+                <div className="text-[8px] font-black text-gray-400 uppercase mb-1">Premium</div>
+                <div className="text-xl font-black text-[#4B2315]">{breakdown.castle} Crates</div>
                 <div className="text-xs font-bold text-gray-400 uppercase mt-2 italic">Castle Lite</div>
               </div>
             </div>
 
-            <button onClick={placeOrder} className="w-full bg-[#4B2315] text-white py-5 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all group">
-              Confirm Selection & Order <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+            <button onClick={placeOrder} className="w-full bg-[#4B2315] text-white py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all group text-sm">
+              Confirm Selection & Order <ChevronRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Footer Branding */}
-      <div className="mt-16 py-12 bg-white text-center">
+      <div className="mt-4 py-6 bg-white text-center">
         <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em] mb-6">Proudly part of ABInBev</p>
         <div className="flex justify-center gap-12 grayscale opacity-60">
            <span className="font-black text-xl">NILE SPECIAL</span>
