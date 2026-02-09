@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Beer, Users, Clock, ShoppingCart, Phone, MapPin } from 'lucide-react';
+import { Beer, Users, Clock, ShoppingCart, Phone, MapPin, ChevronRight } from 'lucide-react';
 
 const NBLPartyPortal = () => {
   const [guests, setGuests] = useState(50);
@@ -84,6 +84,17 @@ const NBLPartyPortal = () => {
   const sumBrandCounts = (counts) => {
     return Object.values(counts || {}).reduce((s, v) => s + (Number(v) || 0), 0);
   };
+
+  // Calculate smart mix breakdown
+  const getBreakdown = () => {
+    const total = crates;
+    const nile = selectedBrandCounts['Nile Special'] || Math.ceil(total * 0.4);
+    const club = selectedBrandCounts['Club'] || Math.ceil(total * 0.3);
+    const castle = selectedBrandCounts['Castle Lite'] || Math.ceil(total * 0.3);
+    return { total, nile, club, castle };
+  };
+
+  const breakdown = getBreakdown();
 
   const [orderError, setOrderError] = useState('');
   const [orderSuccess, setOrderSuccess] = useState('');
@@ -256,12 +267,12 @@ const NBLPartyPortal = () => {
         </p>
       </div>
 
-      {/* Calculator Card */}
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-200">
-          
-          {/* Inputs */}
-          <div className="p-8 md:w-1/2 space-y-8">
+      {/* Calculator Card with Smart Mix */}
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Inputs (Left) */}
+          <div className="lg:col-span-1 bg-white rounded-lg shadow-xl p-8 border border-gray-200">
+            <div className="space-y-8">
             <div>
               <label className="block text-xs font-black uppercase text-gray-500 mb-4 tracking-widest">Expected Guests</label>
               <div className="flex gap-3">
@@ -471,24 +482,42 @@ const NBLPartyPortal = () => {
                 </>
               )}
             </div>
+            </div>
           </div>
 
-          {/* Result Area - Styled like the NBL Product Page */}
-          <div className="bg-[#FDF8E4] p-8 md:w-1/2 border-l border-gray-100 flex flex-col items-center justify-center text-center">
-            <div className="bg-[#921A28] p-4 rounded-full mb-4 shadow-lg">
-               <Beer className="text-white w-8 h-8" />
+          {/* Center/Right: Smart Mix Results */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-[#921A28] text-white p-8 rounded-xl shadow-xl relative overflow-hidden">
+               <Beer className="absolute -right-4 -bottom-4 w-40 h-40 opacity-10 rotate-12" />
+               <p className="text-xs font-bold uppercase tracking-[0.3em] opacity-80 mb-2">Total Suggested Order</p>
+               <h2 className="text-7xl font-black">{breakdown.total} <span className="text-2xl uppercase opacity-60">Crates</span></h2>
             </div>
-            <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-1 text-center">Recommended Stock</h3>
-            {useCustom && (
-              <p className="text-xs font-bold text-[#921A28] uppercase mb-3">
-                {selectedBrands.length > 0 ? selectedBrands.join(', ') : 'All Brands'}
-              </p>
-            )}
-            <div className="text-6xl font-black text-[#4B2315]">{crates}</div>
-            <p className="text-sm font-bold text-[#921A28] uppercase mt-2">Crates of Beer</p>
-            
-            <button className="mt-8 bg-[#4B2315] text-white px-8 py-3 rounded-md font-bold uppercase tracking-widest hover:bg-[#921A28] transition-colors shadow-lg">
-              Place Order Now
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Nile Special Card */}
+              <div className="bg-white p-6 rounded-xl border-b-4 border-[#D1A33C] shadow-sm">
+                <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Flagship</div>
+                <div className="text-2xl font-black text-[#4B2315]">{breakdown.nile} Crates</div>
+                <div className="text-xs font-bold text-[#D1A33C] uppercase mt-2 italic">Nile Special</div>
+              </div>
+
+              {/* Club Card */}
+              <div className="bg-white p-6 rounded-xl border-b-4 border-blue-400 shadow-sm">
+                <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Refreshing</div>
+                <div className="text-2xl font-black text-[#4B2315]">{breakdown.club} Crates</div>
+                <div className="text-xs font-bold text-blue-500 uppercase mt-2 italic">Club Pilsener</div>
+              </div>
+
+              {/* Castle Lite Card */}
+              <div className="bg-white p-6 rounded-xl border-b-4 border-gray-300 shadow-sm">
+                <div className="text-[10px] font-black text-gray-400 uppercase mb-1">Premium</div>
+                <div className="text-2xl font-black text-[#4B2315]">{breakdown.castle} Crates</div>
+                <div className="text-xs font-bold text-gray-400 uppercase mt-2 italic">Castle Lite</div>
+              </div>
+            </div>
+
+            <button onClick={placeOrder} className="w-full bg-[#4B2315] text-white py-5 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all group">
+              Confirm Selection & Order <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </button>
           </div>
         </div>
