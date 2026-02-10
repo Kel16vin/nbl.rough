@@ -99,7 +99,7 @@ const NBLPartyPortal = () => {
   const [orderError, setOrderError] = useState('');
   const [orderSuccess, setOrderSuccess] = useState('');
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     setOrderError('');
     setOrderSuccess('');
     // validations
@@ -118,25 +118,29 @@ const NBLPartyPortal = () => {
       return;
     }
 
-    // Build order payload
     const payload = {
-      guests: Number(guests),
-      eventDate: eventDate || null,
-      eventDuration: Number(eventDuration),
-      crates: crates,
-      customCrates: customCrates || null,
-      brands: useCustom ? selectedBrands : ['All Brands'],
-      brandCounts: useCustom ? selectedBrandCounts : null,
-      delivery: {
-        address: deliveryLocation || deliveryInput,
-        coords: deliveryCoords || null,
-      },
-      timestamp: new Date().toISOString(),
+      guests,
+      eventDuration,
+      crates,
+      smartMix: breakdown, // Sending the breakdown we created
+      delivery: { address: deliveryInput },
     };
 
-    // For now we'll console.log and show a success message (you can POST this payload to your API)
-    console.log('Order payload:', payload);
-    setOrderSuccess('Order prepared — check console for payload (or implement API POST).');
+    try {
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setOrderSuccess(`Cheers! Order #${data.orderId} sent to NBL Hub.`);
+      }
+    } catch (error) {
+      console.error("Connection to NBL Hub failed", error);
+      setOrderError('Failed to connect to NBL Hub. Please try again.');
+    }
   };
 
   // helper to select a search result (from Nominatim)
