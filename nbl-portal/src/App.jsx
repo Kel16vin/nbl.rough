@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Beer, Users, Clock, ShoppingCart, Phone, MapPin, ChevronRight } from 'lucide-react';
+import OrderConfirmation from './OrderConfirmation';
+import OrderReview from './OrderReview';
 
-const NBLPartyPortal = () => {
+const NBLPartyPortalCalculator = ({ onOrderSuccess, onShowReview, orderData }) => {
   const [guests, setGuests] = useState(50);
   const [eventDate, setEventDate] = useState('');
   const [eventDuration, setEventDuration] = useState(4);
@@ -102,44 +105,38 @@ const NBLPartyPortal = () => {
   const placeOrder = async () => {
     setOrderError('');
     setOrderSuccess('');
-    // validations
-    if (useCustom) {
-      if (!customCrates || customCrates <= 0) {
-        setOrderError('Please enter a valid number of crates when customizing.');
-        return;
-      }
-      if (!selectedBrands || selectedBrands.length === 0) {
-        setOrderError('Please select at least one brand when customizing crates.');
-        return;
-      }
-    }
-    if (!deliveryLocation && !deliveryInput) {
-      setOrderError('Please select or enter a delivery location.');
-      return;
-    }
 
-    const payload = {
-      guests,
-      eventDuration,
-      crates,
-      smartMix: breakdown, // Sending the breakdown we created
-      delivery: { address: deliveryInput },
+    // 1. Prepare the data package
+    const orderData = {
+      guests: Number(guests),
+      eventDuration: Number(eventDuration),
+      totalCrates: crates,
+      breakdown: useCustom ? selectedBrandCounts : breakdown,
+      location: deliveryInput,
+      timestamp: new Date().toISOString(),
     };
 
     try {
+      // 2. Send the data to your backend
       const response = await fetch('http://localhost:5000/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
       });
-      
-      const data = await response.json();
-      if (data.success) {
-        setOrderSuccess(`Cheers! Order #${data.orderId} sent to NBL Hub.`);
+
+      const result = await response.json();
+
+      if (result.success) {
+        setOrderSuccess(`Order #${result.orderId} received! NBL is processing your legend plan.`);
+        alert("Order Successful! Check the backend terminal to see the data.");
+      } else {
+        setOrderError("Something went wrong on our end.");
       }
-    } catch (error) {
-      console.error("Connection to NBL Hub failed", error);
-      setOrderError('Failed to connect to NBL Hub. Please try again.');
+    } catch (err) {
+      setOrderError("Cannot connect to the NBL server. Is the backend running?");
+      console.error("Connection Error:", err);
     }
   };
 
@@ -270,6 +267,15 @@ const NBLPartyPortal = () => {
           With our iconic brands, we have you covered for your event.
         </p>
       </div>
+
+      {/* Error Alert */}
+      {orderError && (
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-4">
+            <p className="text-red-700 font-bold text-sm">{orderError}</p>
+          </div>
+        </div>
+      )}
 
       {/* Calculator Card with Smart Mix */}
       <div className="max-w-7xl mx-auto px-4 py-3">
@@ -540,4 +546,77 @@ const NBLPartyPortal = () => {
   );
 };
 
-export default NBLPartyPortal;
+// Main App with routing
+const App = () => {
+  const [orderData, setOrderData] = useState(null);
+  const [reviewData, setReviewData] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleShowReview = (data) => {
+    setReviewData(data);
+    window.location.hash = '#/review';
+  };
+
+  const handleConfirmOrder = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guests: reviewData.guests,
+          eventDuration: reviewData.eventDuration,
+          crates: reviewData.crates,
+          smartMix: reviewData.smartMix,
+          delivery: reviewData.delivery,
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        const completeOrderData = {
+          ...data,
+          ...reviewData
+        };
+        setOrderData(completeOrderData);
+        setReviewData(null);
+        window.location.hash = '#/order';
+      } else {
+        alert('Error: ' + (data.error || 'Failed to place order'));
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert('Failed to connect to NBL Hub. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBackToEdit = () => {
+    setReviewData(null);
+    window.location.hash = '#/';
+  };
+
+  const handleOrderSuccess = (data) => {
+    setOrderData(data);
+    window.location.hash = '#/order';
+  };
+
+  const handleNewOrder = () => {
+    setOrderData(null);
+    setReviewData(null);
+    window.location.hash = '#/';
+  };
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<NBLPartyPortalCalculator onOrderSuccess={handleOrderSuccess} onShowReview={handleShowReview} orderData={orderData} />} />
+        <Route path="/review" element={<OrderReview orderDetails={reviewData} onConfirm={handleConfirmOrder} onCancel={handleBackToEdit} isLoading={isSubmitting} />} />
+        <Route path="/order" element={<OrderConfirmation orderData={orderData} onNewOrder={handleNewOrder} />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
